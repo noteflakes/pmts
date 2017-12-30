@@ -28,6 +28,18 @@ select stamp, value from measurements where sensor = 'temp' and stamp >= now() -
 ```
 ## API
 
+The PMTS API is made of PL/pgSQL functions. Those functions can be called just like any built-in function using `select`:
+
+```SQL
+[dbuser] # select pmts_setup_partitions(...);
+```
+
+You can also invoke these functions from your shell:
+
+```bash
+$ psql -c "select pmts_setup_partitions(...);"
+```
+
 ### pmts_setup_partitions()
 
 Sets up partitioning for the specified table. PMTS will use the supplied arguments to control partition creation and deletion. Partitions are created on the fly by using an insert trigger. The trigger will create partitions as needed and insert records into the correct partition.
@@ -61,7 +73,7 @@ PMTS will then create an index on `(unit, metric, stamp)` for each partition.
 
 ### pmts_drop_old_partitions()
 
-Drops old partitions according to retention period specified for each table.
+Drops old partitions according to retention period specified for each table. This function should be called periodically to remove old partitions. Use your favorite to setup a recurring job that invokes the function.
 
 ## FAQ
 
