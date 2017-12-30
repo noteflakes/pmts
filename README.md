@@ -4,7 +4,7 @@ PMTS is a collection of tools for working with time-series data in PostgreSQL wr
 
 - Automatic partitioning (sharding) of time-series tables by time range.
 - Automatic dropping of old partitions according to data retention settings.
-- Aggregation and summarizing utilities.
+- Aggregation and summarizing utilities (WIP).
 
 PMTS delivers many of the benefits of using tools such as TimeScaleDB or CitusDB on a stock PostgreSQL setup. PMTS has been employed successfuly in a 1TB production database with hundreds of tables and billions of time-series records.
 
