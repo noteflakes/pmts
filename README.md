@@ -32,6 +32,14 @@ PMTS delivers many of the benefits of using tools such as TimeScaleDB or CitusDB
 
     $ psql -f pmts.sql
 
+**Q:** Does PMTS work in AWS RDS?
+
+**A:** Yes.
+
+**Q:** Do I need to install anything besides PostgreSQL for PMTS to work?
+
+**A:** No.
+
 ## Getting Started
 
 After installing PMTS, create a sample table and start working with it.
@@ -52,3 +60,41 @@ select stamp, value from measurements where sensor = 'temp' and stamp >= now() -
 ```
 ## API
 
+### pmts_setup_partitions()
+
+Sets up partitioning for the specified table. PMTS will use the supplied arguments to control partition creation and deletion. Partitions are created on the fly by using an insert trigger. The trigger will create partitions as needed and insert records into the correct partition.
+
+#### Required arguments
+
+Name|Description
+----|-----------
+tbl_name|Identifier of table to be partitioned
+partition_size|The partition size in seconds
+retention_period|The retention period in seconds
+index fields|An array of fields to use for indexing
+
+PMTS partitions tables by time ranges. The `partition_size` argument controls the size of each partitions in terms of time range. The `retention_period` argument is used to control how the amount of time to retain old data.
+
+The `index_fields` argument is used to control the index created automatically by PMTS. By default, if no index fields are specified, PMTS will create an index on the `stamp` field for each created partition. In most cases, though, A compound index will be more useful, as usually data is filtered not only by time range but also by one or more dimensions in other columns.
+
+For example, consider the following scenario:
+
+```SQL
+create table measurements (unit text, metric text, stamp timestamptz, value numeric);
+```
+
+In such a case, we'll usually query by unit, metric *and* stamp. We therefore pass the relevant columns to PMTS:
+
+```SQL
+select pmts_setup_partitions ('measurements', 86400 * 7, 86400 * 365, '{unit, metric}');
+```
+
+PMTS will then create an index on `(unit, metric, stamp)` for each partition.
+
+### pmts_drop_old_partitions()
+
+Drops old partitions according to retention period specified for each table.
+
+# Disclaimer
+
+This is unstable code, might contain bugs, might  and might destroy your data. Use in production at your own risk.
