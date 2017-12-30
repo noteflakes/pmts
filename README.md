@@ -8,38 +8,6 @@ PMTS is a collection of tools for working with time-series data in PostgreSQL wr
 
 PMTS delivers many of the benefits of using tools such as TimeScaleDB or CitusDB on a stock PostgreSQL setup. PMTS has been employed successfuly in a 1TB production database with hundreds of tables and billions of time-series records.
 
-## FAQ
-
-**Q:** What is a time series table?
-
-**A:** For PMTS, any table that includes a `stamp` column, of type `timestamp` or `timestamptz`.
-
-**Q:** Why should I partition (or shard) my time series tables?
-
-**A:** Partitioning a table allows you to keep your tables to a manageable size and maintain a good insertion rate. It also makes it easier to get rid of old data by simply dropping partitions instead of deleting recores and then vacuuming.
-
-**Q:** How does partitioning work?
-
-**A:** For each partitioned table, PMTS maintains a list of partitions and installs an insert trigger that will insert each record into the correct partition according to the time stamp. Partition tables are created using PostgreSQL's table inheritance mechanism. That way, the query planner will automatically include and exclude partition tables according to the time range specified for the query.
-
-**Q:** What versions of PostgreSQL can be used with PMTS?
-
-**A:** PMTS has been developed and used on PostgreSQL 9.6. It will most probably not work with anything before 9.0.
-
-**Q:** How do I install it?
-
-**A:** Simply download `pmts.sql` and load into your database using `psql`:
-
-    $ psql -f pmts.sql
-
-**Q:** Does PMTS work in AWS RDS?
-
-**A:** Yes.
-
-**Q:** Do I need to install anything besides PostgreSQL for PMTS to work?
-
-**A:** No.
-
 ## Getting Started
 
 After installing PMTS, create a sample table and start working with it.
@@ -95,6 +63,39 @@ PMTS will then create an index on `(unit, metric, stamp)` for each partition.
 
 Drops old partitions according to retention period specified for each table.
 
-# Disclaimer
+## FAQ
+
+**Q:** What is a time series table?
+
+**A:** For PMTS, any table that includes a `stamp` column, of type `timestamp` or `timestamptz`.
+
+**Q:** Why should I partition (or shard) my time series tables?
+
+**A:** Partitioning a table allows you to keep your tables to a manageable size and maintain a good insertion rate. It also makes it easier to get rid of old data by simply dropping partitions instead of deleting recores and then vacuuming.
+
+**Q:** How does partitioning work?
+
+**A:** For each partitioned table, PMTS maintains a list of partitions and installs an insert trigger that will insert each record into the correct partition according to the time stamp. Partition tables are created using PostgreSQL's table inheritance mechanism. That way, the query planner will automatically include and exclude partition tables according to the time range specified for the query.
+
+**Q:** What versions of PostgreSQL can be used with PMTS?
+
+**A:** PMTS has been developed and used on PostgreSQL 9.6. It will most probably not work with anything before 9.0.
+
+**Q:** How do I install it?
+
+**A:** Simply download `pmts.sql` and load into your database using `psql`:
+
+    $ psql -f pmts.sql
+
+**Q:** Does PMTS work in AWS RDS?
+
+**A:** Yes.
+
+**Q:** Do I need to install anything besides PostgreSQL for PMTS to work?
+
+**A:** No.
+
+## Disclaimer
 
 This is unstable code, might contain bugs, might  and might destroy your data. Use in production at your own risk.
+
