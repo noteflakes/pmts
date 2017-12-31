@@ -137,7 +137,30 @@ END;
 $$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION pmts_total_size(tbl_name TEXT) RETURNS numeric
+AS $$
+  SELECT sum(pg_total_relation_size(partition_name)) as total_size
+  FROM pmts_partitions
+  WHERE tbl_name = $1;
+$$ language sql;
+
+
+CREATE OR REPLACE VIEW pmts_info AS 
+  SELECT
+    tbl_name,
+    sum(pg_total_relation_size(partition_name)) as total_size,
+    count(partition_name) as partition_count
+  FROM pmts_partitions
+  GROUP BY tbl_name;
+
+CREATE FUNCTION pmts_version() RETURNS TEXT
+AS $$
+BEGIN
+  RETURN '0.2';
+END
+$$ language plpgsql;
+
 DO $$
 BEGIN
-  RAISE NOTICE 'PMTS version 0.1 at your service!';
+  RAISE NOTICE 'PMTS Version % at your service!', pmts_version();
 END $$;
