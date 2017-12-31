@@ -144,14 +144,16 @@ AS $$
   WHERE tbl_name = $1;
 $$ language sql;
 
-
 CREATE OR REPLACE VIEW pmts_info AS 
-  SELECT
-    tbl_name,
-    sum(pg_total_relation_size(partition_name)) as total_size,
-    count(partition_name) as partition_count
-  FROM pmts_partitions
-  GROUP BY tbl_name;
+WITH p AS (
+  SELECT tbl_name, partition_name FROM pmts_partitions 
+)
+SELECT
+  t.tbl_name,
+  coalesce(sum(pg_total_relation_size(p.partition_name)), 0) as total_size,
+  count(p.partition_name) as partition_count
+FROM pmts_tables t LEFT JOIN p ON p.tbl_name = t.tbl_name
+GROUP BY t.tbl_name;
 
 CREATE FUNCTION pmts_version() RETURNS TEXT
 AS $$
