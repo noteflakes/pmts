@@ -40,18 +40,18 @@ You can also invoke these functions from your shell:
 $ psql -c "select pmts_setup_partitions(...);"
 ```
 
-### pmts_setup_partitions()
+### pmts_setup_partitions(tbl_name, partition_size, retention_period, index_fields)
 
 Sets up partitioning for the specified table. PMTS will use the supplied arguments to control partition creation and deletion. Partitions are created on the fly by using an insert trigger. The trigger will create partitions as needed and insert records into the correct partition.
 
-#### Required arguments
+#### Arguments
 
-Name|Description
-----|-----------
-tbl_name|Identifier of table to be partitioned
-partition_size|The partition size in seconds
-retention_period|The retention period in seconds
-index fields|An array of fields to use for indexing
+Name|Type|Description
+----|----|-----------
+tbl_name|TEXT|Identifier of table to be partitioned
+partition_size|INTEGER|The partition size in seconds
+retention_period|INTEGER|The retention period in seconds
+index_fields|TEXT[]|An array of fields to use for indexing
 
 PMTS partitions tables by time ranges. The `partition_size` argument controls the size of each partitions in terms of time range. The `retention_period` argument is used to control how the amount of time to retain old data.
 
@@ -74,6 +74,20 @@ PMTS will then create an index on `(unit, metric, stamp)` for each partition.
 ### pmts_drop_old_partitions()
 
 Drops old partitions according to retention period specified for each table. This function should be called periodically to remove old partitions. Use your favorite to setup a recurring job that invokes the function.
+
+### pmts_total_size(tbl_name)
+
+Returns the sum of total relation size for all partitions of the specified table using `pg_total_relation_size`.
+
+#### Arguments
+
+Name|Type|Description
+----|----|-----------
+tbl_name|TEXT|Table name
+
+### pmts_info
+
+A view returning total size and number of partitions for each table managed by PMTS.
 
 ## FAQ
 
