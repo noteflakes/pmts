@@ -160,6 +160,26 @@ SELECT
 FROM pmts_tables t LEFT JOIN p ON p.tbl_name = t.tbl_name
 GROUP BY t.tbl_name;
 
+CREATE OR REPLACE FUNCTION pmts_ideal_partition_size(
+  desired_byte_size BIGINT,
+  current_byte_size BIGINT, 
+  current_partition_size BIGINT,
+  min_days INT DEFAULT 7,
+  max_days INT DEFAULT 30
+) RETURNS BIGINT
+AS $$
+DECLARE
+  day_byte_size BIGINT;
+  desired_days BIGINT;
+BEGIN
+  day_byte_size = (current_byte_size::float / (current_partition_size / 86400))::bigint;
+  desired_days = greatest(least(round(desired_byte_size / day_byte_size), max_days), min_days);
+  RETURN desired_days * 86400;
+END;
+$$ language plpgsql;
+
+-------------------------------------------
+
 CREATE FUNCTION pmts_version() RETURNS TEXT
 AS $$
 BEGIN
