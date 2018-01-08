@@ -151,7 +151,12 @@ WITH p AS (
 SELECT
   t.tbl_name,
   coalesce(sum(pg_total_relation_size(p.partition_name)), 0) as total_size,
-  count(p.partition_name) as partition_count
+  count(p.partition_name) as partition_count,
+  case when count(p.partition_name) = 0 
+    then 0 
+    else sum(pg_total_relation_size(p.partition_name))::bigint / count(p.partition_name) 
+  end as avg_size,
+  max(t.partition_size) as partition_size
 FROM pmts_tables t LEFT JOIN p ON p.tbl_name = t.tbl_name
 GROUP BY t.tbl_name;
 
