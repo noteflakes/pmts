@@ -31,7 +31,7 @@ select stamp, value from measurements where sensor = 'temp' and stamp >= now() -
 The PMTS API is made of PL/pgSQL functions. Those functions can be called just like any built-in function using `select`:
 
 ```SQL
-[dbuser] # select pmts_setup_partitions(...);
+[dbuser]=> select pmts_setup_partitions(...);
 ```
 
 You can also invoke these functions from your shell:
@@ -87,7 +87,41 @@ tbl_name|TEXT|Table name
 
 ### pmts_info
 
-A view returning total size and number of partitions for each table managed by PMTS.
+A view returning total size and number of partitions for each table managed by PMTS, with the following columns:
+
+Name|Type|Description
+----|----|-----------
+tbl_name|TEXT|Table name
+total_size|NUMERIC|Total size of all table partitions in bytes
+partition_count|BIGINT|Number of existing partitions
+avg_size|BIGINT|Average partition size in bytes
+current_partition_size|INTEGER|Current partition size setting in seconds
+
+### pmts_ideal_partition_size(desired_byte_size, current_byte_size, current_partition_size, min_days, max_days)
+
+Returns the ideal partition size in seconds for the given arguments.
+
+#### Arguments
+
+ Name|Type|Description
+ ––––|----|-----------
+desired_byte_size|BIGINT|The desired partition size in bytes
+current_byte_size|BIGINT|The current average partition size in bytes
+current_partition_size|BIGINT|The current partition size in seconds
+min_days|INT|The minimum partition size in days (by default 7)
+max_days|INT|The maximum partition size in days (by default 56)
+
+### pmts_tune_partition_size(desired_byte_size, min_days, max_days)
+
+Adjusts the partition size for all PMTS-managed tables according to the given arguments. Note: this function should be invoked only seldomly in order for the current average partition size (which is used to calculate the ideal partition size in seconds) to faithfully reflect the current partition size settings.
+
+#### Arguments
+
+ Name|Type|Description
+ ––––|----|-----------
+desired_byte_size|BIGINT|The desired partition size in bytes
+min_days|INT|The minimum partition size in days (by default 7)
+max_days|INT|The maximum partition size in days (by default 56)
 
 ## FAQ
 
