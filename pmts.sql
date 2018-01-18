@@ -165,25 +165,54 @@ CREATE OR REPLACE FUNCTION pmts_ideal_partition_size(
   current_byte_size BIGINT, 
   current_partition_size BIGINT,
   min_days INT DEFAULT 7,
-  max_days INT DEFAULT 30
+  max_days INT DEFAULT 56
 ) RETURNS BIGINT
 AS $$
 DECLARE
   day_byte_size BIGINT;
   desired_days BIGINT;
 BEGIN
+  IF current_byte_size = 0 THEN
+    RETURN NULL;
+  END IF;
   day_byte_size = (current_byte_size::float / (current_partition_size / 86400))::bigint;
   desired_days = greatest(least(round(desired_byte_size / day_byte_size), max_days), min_days);
   RETURN desired_days * 86400;
 END;
 $$ language plpgsql;
 
+CREATE OR REPLACE FUNCTION pmts_tune_partition_size(
+  desired_byte_size BIGINT,
+  min_days INT DEFAULT 7,
+  max_days INT DEFAULT 56
+) RETURNS VOID
+AS $$
+UPDATE
+  pmts_tables t
+SET
+  partition_size = coalesce(
+    pmts_ideal_partition_size(
+      desired_byte_size,
+      i.avg_size,
+      t.partition_size,
+      min_days,
+      max_days
+    ),
+    t.partition_size)
+FROM
+  pmts_info i
+WHERE
+  t.tbl_name = i.tbl_name
+AND
+  i.partition_count > 0;
+$$ language sql;
+
 -------------------------------------------
 
 CREATE FUNCTION pmts_version() RETURNS TEXT
 AS $$
 BEGIN
-  RETURN '0.2';
+  RETURN '0.3';
 END
 $$ language plpgsql;
 
