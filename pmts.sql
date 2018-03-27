@@ -111,6 +111,17 @@ END;
 $$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION pmts_drop_table (tbl TEXT)
+  RETURNS VOID
+AS $$
+BEGIN
+  DELETE FROM pmts_partitions WHERE tbl_name = tbl;
+  DELETE FROM pmts_tables WHERE tbl_name = tbl;
+  EXECUTE FORMAT('DROP TABLE %I CASCADE', tbl);
+END;
+$$
+LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION pmts_drop_old_partitions ()
   RETURNS INTEGER
 AS $$
