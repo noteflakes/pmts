@@ -71,6 +71,16 @@ select pmts_setup_partitions ('measurements', 86400 * 7, 86400 * 365, '{unit, me
 
 PMTS will then create an index on `(unit, metric, stamp)` for each partition.
 
+### pmts_drop_table(tbl_name)
+
+Drops a table that was previously partitioned with `pmts_setup_partitions`, removing information about its partitions from the pmts tables.
+
+#### Arguments
+
+Name|Type|Description
+----|----|-----------
+tbl_name|TEXT|Table identifier
+
 ### pmts_drop_old_partitions()
 
 Drops old partitions according to retention period specified for each table. This function should be called periodically to remove old partitions. Use your favorite to setup a recurring job that invokes the function.
@@ -83,7 +93,7 @@ Returns the sum of total relation size for all partitions of the specified table
 
 Name|Type|Description
 ----|----|-----------
-tbl_name|TEXT|Table name
+tbl_name|TEXT|Table identifier
 
 ### pmts_info
 
@@ -91,7 +101,7 @@ A view returning total size and number of partitions for each table managed by P
 
 Name|Type|Description
 ----|----|-----------
-tbl_name|TEXT|Table name
+tbl_name|TEXT|Table identifier
 total_size|NUMERIC|Total size of all table partitions in bytes
 partition_count|BIGINT|Number of existing partitions
 avg_size|BIGINT|Average partition size in bytes
