@@ -36,7 +36,7 @@ DECLARE
   partition_ref INTEGER;
   index_fields TEXT [];
   partition_creation_sql CONSTANT TEXT := '
-    CREATE TABLE %I
+    CREATE TABLE IF NOT EXISTS %I
       (CHECK (stamp >= %3$L and stamp < %4$L))
     INHERITS (%2$I);
     CREATE INDEX ON %1$I (%5$s);
@@ -70,7 +70,8 @@ BEGIN
     partition_name = FORMAT('%s_p_%s_%s', TG_TABLE_NAME, partition_size, partition_ref);
 
     INSERT INTO pmts_partitions
-    VALUES (TG_TABLE_NAME, stamp_min, stamp_max, partition_name);
+    VALUES (TG_TABLE_NAME, stamp_min, stamp_max, partition_name)
+    ON CONFLICT DO NOTHING;
     
     EXECUTE FORMAT(partition_creation_sql,
       partition_name,
