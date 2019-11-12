@@ -224,7 +224,7 @@ $$ language sql;
 CREATE FUNCTION pmts_version() RETURNS TEXT
 AS $$
 BEGIN
-  RETURN '0.3';
+  RETURN '1.0';
 END
 $$ language plpgsql;
 
