@@ -114,7 +114,7 @@ Returns the ideal partition size in seconds for the given arguments.
 #### Arguments
 
 Name|Type|Description
-––––|----|-----------
+----|----|-----------
 desired_byte_size|BIGINT|The desired partition size in bytes
 current_byte_size|BIGINT|The current average partition size in bytes
 current_partition_size|BIGINT|The current partition size in seconds
@@ -128,7 +128,7 @@ Adjusts the partition size for all PMTS-managed tables according to the given ar
 #### Arguments
 
 Name|Type|Description
-––––|----|-----------
+----|----|-----------
 desired_byte_size|BIGINT|The desired partition size in bytes
 min_days|INT|The minimum partition size in days (by default 7)
 max_days|INT|The maximum partition size in days (by default 56)
