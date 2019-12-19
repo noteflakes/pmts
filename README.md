@@ -12,12 +12,17 @@ PMTS delivers some of the principal benefits of using tools such as TimeScaleDB
 or CitusDB on a stock PostgreSQL setup. PMTS has been employed successfuly in a
 ~2TB production database with hundreds of tables and billions of records.
 
+> **Note**: A new version of PMTS, using declarative table partitioning
+> (supported on PostgreSQL 10.x+) is currently under development. The following
+> documentation relates to PMTS 1.0, which works with PostgreSQL 9.x+. The
+> source code for PMTS 1.0 is in [pmts.pg9.sql](pmts.pg9.sql).
+
 ## Installing PMTS
 
 ```bash
 $ git clone https://github.com/ciconia/pmts.git
 $ cd pmts
-$ psql -d mydb -f pmts.sql
+$ psql -d mydb -f pmts.pg9.sql
 ```
 
 ## Getting Started
@@ -234,9 +239,9 @@ probably not work with anything before 9.0.
 
 **Q:** How do I install it?
 
-**A:** Simply download `pmts.sql` and load into your database using `psql`:
+**A:** Simply download `pmts.pg9.sql` and load into your database using `psql`:
 
-    $ psql -f pmts.sql
+    $ psql -f pmts.pg9.sql
 
 **Q:** Does PMTS work in AWS RDS?
 
