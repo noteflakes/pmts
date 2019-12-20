@@ -56,8 +56,8 @@ GROUP BY t.tbl_name;
 
 -- pmts_next_partitions_to_create: view containing the next partitions that need
 -- to be created for values in the next 3 days
-DROP view IF EXISTS pmts_next_partitions_to_create;
-CREATE view pmts_next_partitions_to_create AS WITH latest_partitions AS (
+CREATE OR REPLACE VIEW pmts_next_partitions_to_create AS
+WITH latest_partitions AS (
   SELECT DISTINCT ON (pmts_tables.tbl_name)
     pmts_tables.tbl_name,
     pmts_tables.partition_size,
@@ -78,14 +78,21 @@ next_partitions AS (
     EXTRACT(EPOCH FROM next_partition_min)::INTEGER /
       partition_size AS partition_id
   FROM latest_partitions
+),
+next_partitions_in_range AS (
+  SELECT
+    format('%s_p_%s_%s', tbl_name, partition_size, partition_id) as partition_name,
+    tbl_name,
+    next_partition_min,
+    next_partition_max
+  FROM next_partitions
+  WHERE (next_partition_min < now() + interval '7 days')
 )
-SELECT
-  format('%s_p_%s_%s', tbl_name, partition_size, partition_id) as partition_name,
-  tbl_name,
-  next_partition_min,
-  next_partition_max
-FROM next_partitions
-WHERE next_partition_min < now() - interval '3 days';
+SELECT next_partitions_in_range.*
+FROM next_partitions_in_range
+LEFT JOIN pmts_partitions
+  ON next_partitions_in_range.partition_name = pmts_partitions.partition_name
+WHERE pmts_partitions.partition_name IS NULL;
 
 ----------
 -- APIs --
