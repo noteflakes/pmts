@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS pmts_partitions (
 CREATE INDEX ON pmts_partitions (tbl_name, stamp_min, stamp_max);
 
 -- pmts_info: view showing stats for partitioned tables
-CREATE OR REPLACE VIEW pmts_info AS 
+DROP VIEW pmts_info;
+CREATE VIEW pmts_info AS 
 WITH p AS (
   SELECT tbl_name, partition_name FROM pmts_partitions 
 )
@@ -56,7 +57,8 @@ GROUP BY t.tbl_name;
 
 -- pmts_next_partitions_to_create: view containing the next partitions that need
 -- to be created for values in the next 3 days
-CREATE OR REPLACE VIEW pmts_next_partitions_to_create AS
+DROP VIEW pmts_next_partitions_to_create;
+CREATE VIEW pmts_next_partitions_to_create AS
 WITH latest_partitions AS (
   SELECT DISTINCT ON (pmts_tables.tbl_name)
     pmts_tables.tbl_name,
@@ -87,12 +89,16 @@ next_partitions_in_range AS (
     next_partition_max
   FROM next_partitions
   WHERE (next_partition_min < now() + interval '7 days')
+),
+missing_partitions AS (
+  SELECT next_partitions_in_range.*, pmts_partitions.partition_name as pn
+  FROM next_partitions_in_range
+  LEFT JOIN pmts_partitions
+    ON next_partitions_in_range.partition_name = pmts_partitions.partition_name
+  WHERE pmts_partitions.partition_name IS NULL
 )
-SELECT next_partitions_in_range.*
-FROM next_partitions_in_range
-LEFT JOIN pmts_partitions
-  ON next_partitions_in_range.partition_name = pmts_partitions.partition_name
-WHERE pmts_partitions.partition_name IS NULL;
+SELECT tbl_name, partition_name, next_partition_min, next_partition_max
+FROM missing_partitions;
 
 ----------
 -- APIs --
