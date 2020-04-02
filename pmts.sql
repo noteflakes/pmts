@@ -129,7 +129,7 @@ AS $$
 BEGIN
   DELETE FROM pmts_partitions WHERE tbl_name = tbl;
   DELETE FROM pmts_tables WHERE tbl_name = tbl;
-  EXECUTE FORMAT('DROP TABLE %I CASCADE', tbl);
+  EXECUTE FORMAT('DROP TABLE IF EXISTS %I CASCADE', tbl);
 END;
 $$
 LANGUAGE plpgsql;
