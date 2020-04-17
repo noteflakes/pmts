@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS pmts_partitions (
 CREATE INDEX ON pmts_partitions (tbl_name, stamp_min, stamp_max);
 
 -- pmts_info: view showing stats for partitioned tables
-DROP VIEW pmts_info;
+DROP VIEW IF EXISTS pmts_info;
 CREATE VIEW pmts_info AS 
 WITH p AS (
   SELECT tbl_name, partition_name FROM pmts_partitions 
@@ -57,7 +57,7 @@ GROUP BY t.tbl_name;
 
 -- pmts_next_partitions_to_create: view containing the next partitions that need
 -- to be created for values in the next 3 days
-DROP VIEW pmts_next_partitions_to_create;
+DROP VIEW IF EXISTS pmts_next_partitions_to_create;
 CREATE VIEW pmts_next_partitions_to_create AS
 WITH latest_partitions AS (
   SELECT DISTINCT ON (pmts_tables.tbl_name)
@@ -118,8 +118,7 @@ BEGIN
 
   PERFORM pmts_create_new_partitions();
 END;
-$$
-LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- pmts_drop_table: drops a table and all its partitions, remove records from
 -- pmts_tables and pmts_partitions
@@ -131,9 +130,9 @@ BEGIN
   DELETE FROM pmts_tables WHERE tbl_name = tbl;
   EXECUTE FORMAT('DROP TABLE IF EXISTS %I CASCADE', tbl);
 END;
-$$
-LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
+-- pmts_drop_old_partitions: drop partitions older than retention period
 CREATE OR REPLACE FUNCTION pmts_drop_old_partitions ()
   RETURNS INTEGER
 AS $$
@@ -157,8 +156,7 @@ BEGIN
   END LOOP;
   RETURN counter;
 END;
-$$
-LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- pmts_create_new_partitions: creates new partitions from
 -- pmts_next_partitions_to_create view
@@ -195,9 +193,10 @@ BEGIN
   END LOOP;
   RETURN counter;
 END;
-$$
-LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
+-- pmts_create_all_partitions: create all partitions for all tables taking into
+-- account the retention period for each table
 CREATE OR REPLACE FUNCTION pmts_create_all_partitions(tbl TEXT)
   RETURNS INTEGER
 AS $$
@@ -254,8 +253,7 @@ BEGIN
 
   RETURN counter;
 END;
-$$
-LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- pmts_total_size: returns total size of given table's partitions
 CREATE OR REPLACE FUNCTION pmts_total_size(tbl_name TEXT) RETURNS numeric
@@ -263,7 +261,7 @@ AS $$
   SELECT sum(pg_total_relation_size(partition_name)) as total_size
   FROM pmts_partitions
   WHERE tbl_name = $1;
-$$ language sql;
+$$ LANGUAGE sql;
 
 -- pmts_ideal_partition_size: returns ideal partition size
 CREATE OR REPLACE FUNCTION pmts_ideal_partition_size(
@@ -285,7 +283,7 @@ BEGIN
   desired_days = greatest(least(round(desired_byte_size / day_byte_size), max_days), min_days);
   RETURN desired_days * 86400;
 END;
-$$ language plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- pmts_tune_partition_size: tunes partition sizes for all tables
 CREATE OR REPLACE FUNCTION pmts_tune_partition_size(
@@ -312,7 +310,7 @@ WHERE
   t.tbl_name = i.tbl_name
 AND
   i.partition_count > 0;
-$$ language sql;
+$$ LANGUAGE sql;
 
 -- pmts_version: returns PMTS version
 CREATE OR REPLACE FUNCTION pmts_version() RETURNS TEXT
@@ -320,7 +318,7 @@ AS $$
 BEGIN
   RETURN '2.0';
 END
-$$ language plpgsql;
+$$ LANGUAGE plpgsql;
 
 DO $$
 BEGIN
