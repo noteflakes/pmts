@@ -39,6 +39,7 @@ DECLARE
     CREATE TABLE IF NOT EXISTS %I
       (CHECK (stamp >= %3$L and stamp < %4$L))
     INHERITS (%2$I);
+    CREATE INDEX ON %1$I (stamp);
     CREATE INDEX ON %1$I (%5$s);
   ';
 BEGIN
